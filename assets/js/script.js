@@ -75,6 +75,31 @@ $(".list-group").on("blur", "textarea", function() {
     $(this).replaceWith(taskP);
 });
 
+// listen for clicks on dates
+$(".list-group").on("click", "span", function() {
+    var date = $(this).text().trim();
+    var dateInput = $("<input>").attr("type", "text").addClass("form-control").val(date);
+    $(this).replaceWith(dateInput);
+    dateInput.trigger("focus");
+});
+
+// record change of due date
+$(".list-group").on("blur", "input[type='text']", function() {
+    var date = $(this).val().trim();
+
+    // get status and position of task
+    var status = $(this).closest(".list-group").attr("id").replace("list-", "");
+    var index = $(this).closest(".list-group-item").index();
+
+    // update task in tasks array and save
+    tasks[status][index].date = date;
+    saveTasks();
+
+    // put span back
+    var taskSpan = $("<span>").addClass("badge badge-primary badge-pill").text(date);
+    $(this).replaceWith(taskSpan);
+})
+
 // modal was triggered
 $("#task-form-modal").on("show.bs.modal", function () {
 	// clear values
