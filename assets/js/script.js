@@ -1,5 +1,54 @@
 var tasks = {};
 
+$(".card .list-group").sortable({
+    // makes it so they can move between lists
+    connectWith: $(".card .list-group"),
+    // page won't scroll if you drag the item to an edge
+    scroll: false,
+    // this is how the page detects if this item is overlapping another
+    tolerance: "pointer",
+    // according to the documentation, this means a clone of the selected element will be created and dragged... apparently this helps prevent accidental event triggers?
+    helper: "clone",
+    // // this function runs on every list every time a drag is started
+    // activate: function(event) { console.log("activate", this); },
+    // // this function runs on every list every time a drag is ended
+    // deactivate: function(event) {console.log("deactivate", this); },
+    // // this function runs when an element is dragged over a list it can be sorted into
+    // over: function(event) {
+    //     console.log("over", event.target);
+    // },
+    // // this function runs when it's moved away
+    // out: function(event) {
+    //     console.log("out", event.target);
+    // },
+    // when an item is moved and set into place, this event is triggered for both involved lists
+    // this function will run separately for both!
+    update: function(event) {
+        var tempArr = [];
+
+        // get an array of all the children of this list and run a callback func on each
+        $(this).children().each(function() {
+            // save the data from them
+            var text = $(this).find("p").text().trim();
+            var date = $(this).find("span").text().trim();
+
+            // push it into tempArr
+            var obj = {
+                text: text,
+                date: date
+            };
+            tempArr.push(obj);
+        });
+        
+        // get the id attribute of this list and pull out just the unique part
+        var arrName = $(this).attr("id").replace("list-", "");
+        // get the array in tasks that corresponds to the key name arrName (that is, corresponds to this list)
+        // fill it with the contents of tempArr
+        tasks[arrName] = tempArr;
+        saveTasks();
+    }
+});
+
 var createTask = function (taskText, taskDate, taskList) {
 	// create elements that make up a task item
 	var taskLi = $("<li>").addClass("list-group-item");
