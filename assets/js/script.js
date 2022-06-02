@@ -57,9 +57,13 @@ $("#trash").droppable({
         ui.draggable.remove();
         // ui.draggable refers to the draggable item actually being moved
         // the remove() method by default tells the sortable objects to update, which includes re-calling saveTasks()
-        // i don't understand why event is necessary, because it's not being used anywhere, but it is
+        // i don't understand why event is necessary, because it's not being used anywhere, but removing it breaks the function
     }
 })
+
+$("#modalDueDate").datepicker({
+    minDate: 0
+});
 
 var createTask = function (taskText, taskDate, taskList) {
 	// create elements that make up a task item
@@ -71,6 +75,9 @@ var createTask = function (taskText, taskDate, taskList) {
 
 	// append span and p element to parent li
 	taskLi.append(taskSpan, taskP);
+
+    // send task into auditTask to get contextual formatting
+    auditTask(taskLi);
 
 	// append to ul list on the page
 	$("#list-" + taskList).append(taskLi);
@@ -100,6 +107,27 @@ var loadTasks = function () {
 
 var saveTasks = function () {
 	localStorage.setItem("tasks", JSON.stringify(tasks));
+};
+
+var auditTask = function (taskEl) {
+    var date = $(taskEl).find("span").text().trim();
+    var time = moment(date, "L").set("hour", 17);
+    // moment(date, "L") means "make a moment object using the variable date, and interpreting it as following the local date format"
+    // "L" is what means "local format", for clarity
+
+    // strip style classes if present
+    $(taskEl).removeClass("list-group-item-warning list-group-item-danger");
+
+    // moment() here is referring to the time when this function is called, not a saved value
+    if (moment().isAfter(time)) {
+        $(taskEl).addClass("list-group-item-danger");
+    }
+    // the variable time is storing the due date for the list item, at 5:00 PM
+    // .diff (time, "days") returns the difference between the due date, time, and now, in specifided units
+    // typically, .diff will return a negative number when comparing to a date in the future, so we use Math.abs() to make it positive
+    else if (Math.abs(moment().diff(time, "days")) <= 2) {
+        $(taskEl).addClass("list-group-item-warning");
+    };
 };
 
 // apply event listener to .list-group that listens for events on descendant paragraphs
@@ -141,11 +169,22 @@ $(".list-group").on("click", "span", function() {
     var date = $(this).text().trim();
     var dateInput = $("<input>").attr("type", "text").addClass("form-control").val(date);
     $(this).replaceWith(dateInput);
+
+    dateInput.datepicker({
+        minDate: 0,
+        onClose: function() {
+            // force "change" event on the input when calendar is closed
+            // if no date has been picked, this will put back the original value
+            // this works because the data for the task hasn't been changed
+            $(this).trigger("change")
+        }
+    });
+
     dateInput.trigger("focus");
 });
 
 // record change of due date
-$(".list-group").on("blur", "input[type='text']", function() {
+$(".list-group").on("change", "input[type='text']", function() {
     var date = $(this).val().trim();
 
     // get status and position of task
@@ -159,6 +198,9 @@ $(".list-group").on("blur", "input[type='text']", function() {
     // put span back
     var taskSpan = $("<span>").addClass("badge badge-primary badge-pill").text(date);
     $(this).replaceWith(taskSpan);
+
+    // check new due date
+    auditTask($(taskSpan).closest(".list-group-item"));
 })
 
 // modal was triggered
