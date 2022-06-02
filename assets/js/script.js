@@ -77,7 +77,7 @@ var createTask = function (taskText, taskDate, taskList) {
 	taskLi.append(taskSpan, taskP);
 
     // send task into auditTask to get contextual formatting
-    auditTask(taskLi);
+    auditTask(taskLi, taskList);
 
 	// append to ul list on the page
 	$("#list-" + taskList).append(taskLi);
@@ -109,11 +109,16 @@ var saveTasks = function () {
 	localStorage.setItem("tasks", JSON.stringify(tasks));
 };
 
-var auditTask = function (taskEl) {
+var auditTask = function (taskEl, taskListEl) {
     var date = $(taskEl).find("span").text().trim();
     var time = moment(date, "L").set("hour", 17);
     // moment(date, "L") means "make a moment object using the variable date, and interpreting it as following the local date format"
     // "L" is what means "local format", for clarity
+
+    if (taskListEl === "done") {
+        $(taskEl).addClass("list-group-item-success");
+        return false;
+    };
 
     // strip style classes if present
     $(taskEl).removeClass("list-group-item-warning list-group-item-danger");
