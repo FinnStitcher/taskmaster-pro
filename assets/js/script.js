@@ -9,21 +9,17 @@ $(".card .list-group").sortable({
     tolerance: "pointer",
     // according to the documentation, this means a clone of the selected element will be created and dragged... apparently this helps prevent accidental event triggers?
     helper: "clone",
-    // // this function runs on every list every time a drag is started
-    // activate: function(event) { console.log("activate", this); },
-    // // this function runs on every list every time a drag is ended
-    // deactivate: function(event) {console.log("deactivate", this); },
-    // // this function runs when an element is dragged over a list it can be sorted into
-    // over: function(event) {
-    //     console.log("over", event.target);
-    // },
-    // // this function runs when it's moved away
-    // out: function(event) {
-    //     console.log("out", event.target);
-    // },
+    // this function runs on every list every time a drag is started
+    activate: null,
+    // this function runs on every list every time a drag is ended
+    deactivate: null,
+    // this function runs when an element is dragged over a list it can be sorted into
+    over: null,
+    // this function runs when it's moved away
+    out: null,
     // when an item is moved and set into place, this event is triggered for both involved lists
     // this function will run separately for both!
-    update: function(event) {
+    update: function() {
         var tempArr = [];
 
         // get an array of all the children of this list and run a callback func on each
@@ -48,6 +44,22 @@ $(".card .list-group").sortable({
         saveTasks();
     }
 });
+
+$("#trash").droppable({
+    // determines what items can interact with this one
+    accept: ".card .list-group-item",
+    // determines how much of the draggable needs to be touching it when dropped
+    tolerance: "touch",
+    over: null,
+    out: null,
+    // determines what to do when the draggable is actually dropped
+    drop: function(event, ui) {
+        ui.draggable.remove();
+        // ui.draggable refers to the draggable item actually being moved
+        // the remove() method by default tells the sortable objects to update, which includes re-calling saveTasks()
+        // i don't understand why event is necessary, because it's not being used anywhere, but it is
+    }
+})
 
 var createTask = function (taskText, taskDate, taskList) {
 	// create elements that make up a task item
