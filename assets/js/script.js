@@ -9,14 +9,24 @@ $(".card .list-group").sortable({
     tolerance: "pointer",
     // according to the documentation, this means a clone of the selected element will be created and dragged... apparently this helps prevent accidental event triggers?
     helper: "clone",
-    // this function runs on every list every time a drag is started
-    activate: null,
-    // this function runs on every list every time a drag is ended
-    deactivate: null,
-    // this function runs when an element is dragged over a list it can be sorted into
-    over: null,
-    // this function runs when it's moved away
-    out: null,
+    // "activate" event triggers on every list when a drag is started
+    activate: function () {
+        $(this).addClass("dropover");
+        $(".bottom-trash").addClass("bottom-trash-drag");
+    },
+    // "deactivate" event triggers on every list when a drag is ended
+    deactivate: function () {
+        $(this).removeClass("dropover");
+        $(".bottom-trash").removeClass("bottom-trash-drag");
+    },
+    // "over" event triggers on a list when an item is dragged over it
+    over: function (event) {
+        $(event.target).addClass("dropover-active");
+    },
+    // "out" event triggers when the item is moved away
+    out: function (event) {
+        $(event.target).removeClass("dropover-active");
+    },
     // when an item is moved and set into place, this event is triggered for both involved lists
     // this function will run separately for both!
     update: function() {
@@ -50,8 +60,12 @@ $("#trash").droppable({
     accept: ".card .list-group-item",
     // determines how much of the draggable needs to be touching it when dropped
     tolerance: "touch",
-    over: null,
-    out: null,
+    over: function () {
+        $(".bottom-trash").addClass("bottom-trash-drag");
+    },
+    out: function () {
+        $(".bottom-trash").removeClass("bottom-trash-drag");
+    },
     // determines what to do when the draggable is actually dropped
     drop: function(event, ui) {
         ui.draggable.remove();
@@ -217,7 +231,7 @@ $("#task-form-modal").on("shown.bs.modal", function () {
 
 // save button in modal was clicked
 // select element with .btn-primary in #task-form-modal and add a click event listener
-$("#task-form-modal .btn-primary").click(function () {
+$("#task-form-modal .btn-save").click(function () {
 	// get form values
 	var taskText = $("#modalTaskDescription").val();
 	var taskDate = $("#modalDueDate").val();
@@ -254,6 +268,6 @@ setInterval(function () {
     $(".card .list-group-item").each(function (index, el) {
         auditTask(el);
     });
-}, 1000);
+}, 1000 * 60 * 30);
 // get each list
 // run auditTask on each list item inside
