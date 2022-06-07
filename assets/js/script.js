@@ -31,6 +31,8 @@ $(".card .list-group").sortable({
     // this function will run separately for both!
     update: function() {
         var tempArr = [];
+        // get the id attribute of this list and pull out just the unique part
+        var arrName = $(this).attr("id").replace("list-", "");
 
         // get an array of all the children of this list and run a callback func on each
         $(this).children().each(function() {
@@ -44,10 +46,10 @@ $(".card .list-group").sortable({
                 date: date
             };
             tempArr.push(obj);
+
+            checkIfComplete($(this), arrName);
         });
         
-        // get the id attribute of this list and pull out just the unique part
-        var arrName = $(this).attr("id").replace("list-", "");
         // get the array in tasks that corresponds to the key name arrName (that is, corresponds to this list)
         // fill it with the contents of tempArr
         tasks[arrName] = tempArr;
@@ -91,7 +93,8 @@ var createTask = function (taskText, taskDate, taskList) {
 	taskLi.append(taskSpan, taskP);
 
     // send task into auditTask to get contextual formatting
-    auditTask(taskLi, taskList);
+    auditTask(taskLi);
+    checkIfComplete(taskLi, taskList);
 
 	// append to ul list on the page
 	$("#list-" + taskList).append(taskLi);
@@ -141,6 +144,15 @@ var auditTask = function (taskEl) {
     // typically, .diff will return a negative number when comparing to a date in the future, so we use Math.abs() to make it positive
     else if (Math.abs(moment().diff(time, "days")) <= 2) {
         $(taskEl).addClass("list-group-item-warning");
+    };
+};
+
+var checkIfComplete = function (taskEl, listName) {
+    if (listName === "done") {
+        $(taskEl).removeClass("list-group-item-warning list-group-item-danger");
+        $(taskEl).addClass("list-group-item-success");        
+    } else {
+        auditTask(taskEl);
     };
 };
 
